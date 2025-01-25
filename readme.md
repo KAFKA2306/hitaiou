@@ -5,6 +5,8 @@
 ## データの流れ
 
 1. ユーザー入力（Googleフォーム: https://forms.gle/JWDXcChpWzsqpmY97）
+https://docs.google.com/forms/d/1xzy5yyXuzG-LZD-TX-bU_l8UVZd5REguUh0Kr7NYdjw/edit#response=ACYDBNgcsdZsQlAF1c19vri3uuRaJNoNQI1-psSG07z_FfrIq_gAvATd-EQbUiel5ROQoRA
+
 - アバターURLの例：`https://mukumi.booth.pm/items/5813187`
 - 衣装URLの例：`https://vagrant.booth.pm/items/6082952`
 - Twitter ID（必須）
@@ -12,6 +14,7 @@
 - 希望作業者名（任意）
 
 2. データ処理（スプレッドシート: https://docs.google.com/spreadsheets/d/1k133iin4Fu4SHqSY7qSs9CVWFPAF0PW_F30GBFWIqRg/）
+
 具体例：
 - アバター「mukumi/5813187」と衣装「vagrant/6082952」の組み合わせ
 - リクエスト数：8件
