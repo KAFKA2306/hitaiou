@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非対応改変需要ランキング</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@radix-ui/themes@2.0.3/styles.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-4">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold">非対応改変需要ランキング</h1>
+                <div class="text-sm text-gray-500" id="lastUpdate"></div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">順位</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">アバターID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">アイテムID</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">リクエスト数</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">中央値価格</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">潜在市場規模</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="rankingTable">
+                        <!-- データがここに動的に挿入されます -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 text-sm text-gray-500">
+                <p>※ 潜在市場規模 = リクエスト数 × 中央値価格</p>
+                <p>※ ランキングは毎日更新されます</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数値のフォーマット関数
+        function formatNumber(num) {
+            return new Intl.NumberFormat('ja-JP').format(num);
+        }
+
+        // 日時のフォーマット関数
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString('ja-JP');
+        }
+
+        // データを取得して表示する関数
+        async function fetchAndDisplayData() {
+            try {
+                const response = await fetch('/api/demand-metrics');
+                const result = await response.json();
+                
+                // 最終更新日時を更新
+                document.getElementById('lastUpdate').textContent = `最終更新: ${formatDate(result.timestamp)}`;
+                
+                // テーブルを更新
+                const tableBody = document.getElementById('rankingTable');
+                tableBody.innerHTML = '';
+                
+                result.data.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                            <a href="https://booth.pm/ja/items/${row.avatar_id}" target="_blank" class="hover:underline">
+                                ${row.avatar_id}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                            <a href="https://booth.pm/ja/items/${row.item_id}" target="_blank" class="hover:underline">
+                                ${row.item_id}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${row.request_count}件</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">¥${formatNumber(row.median_price)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">¥${formatNumber(row.potential_sales)}</td>
+                    `;
+                    
+                    tableBody.appendChild(tr);
+                });
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // 初期読み込み
+        fetchAndDisplayData();
+        
+        // 5分ごとに更新
+        setInterval(fetchAndDisplayData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
