@@ -1,0 +1,22 @@
+{
+  "range": "'フォームの回答 1'!A1:L102",
+  "majorDimension": "ROWS",
+  "values": [
+    [
+      "タイムスタンプ",
+      "非対応改変したいアバターのBooth URLを入れてください。(https://booth.pm/{language}/items/{item_id})",
+      "非対応改変したい衣装のBooth URLを入れてください。(https://booth.pm/{language}/items/{item_id})",
+      "あなたのTwitter IDを書いてください。非対応改変が確定した際の連絡にのみ使用します。（https://x.com/{twitter_id}）",
+      "参考に、希望改変価格を書いてください。非対応改変作業者とのマッチング率に影響します。",
+      "参考に、希望する非対応改変作業者を書いてください。"
+    ],
+    [
+      45682.879435347219,
+      "https://booth.pm/ja/items/5058077",
+      "https://ornamentcorpse.booth.pm/items/6082952",
+      "kafka_vr",
+      1000,
+      "なし"
+    ]
+  ]
+}
