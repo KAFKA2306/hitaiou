@@ -21,9 +21,10 @@
 - 人気の組み合わせ
 - 予算の分布
 - 市場規模の予測
+  
 ![image](https://github.com/user-attachments/assets/153a5291-c4ed-4346-80f2-909fdeb3457b)
 
-
+ver.2
 ![image](https://github.com/user-attachments/assets/17c6be78-12c9-4e2f-8529-6b0ad0dad257)
 https://hitaioufront.lovable.app/
 
