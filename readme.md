@@ -25,7 +25,7 @@ API:
 ## 検証
 
 ```bash
-python -m unittest discover -v
+python -m unittest discover -s tests -v
 ```
 
 CIではdependency install、Python compile、unit tests、`server.py`起動後の`GET /` HTTP smoke test、clean checkoutを実行します。
