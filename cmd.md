@@ -1,11 +1,6 @@
-
-M:
-cd M:\DB\hitaiou\
-conda activate hitaiou
-
-# 管理者権限のコマンドプロンプトで実行
-netsh advfirewall firewall add rule name="Hitaiou Dashboard External" dir=in action=allow protocol=TCP localport=8001 remoteip=any
-
+```bash
+python -m pip install -r requirements.txt
 python server.py
+```
 
-curl http://219.75.138.126:8001/
+起動後のAPI rootは `http://127.0.0.1:8001/` です。外部公開はrepositoryの検証対象にしていません。
