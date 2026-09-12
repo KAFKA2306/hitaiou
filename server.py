@@ -20,9 +20,7 @@ def parse_snapshot_identity(path):
 
     identity = f"{match.group(1)}_{match.group(2)}"
     try:
-        snapshot_time = datetime.strptime(identity, "%Y%m%d_%H%M%S").replace(
-            tzinfo=timezone.utc
-        )
+        snapshot_time = datetime.strptime(identity, "%Y%m%d_%H%M%S")
     except ValueError as exc:
         raise ValueError(f"Invalid dashboard snapshot time: {path.name}") from exc
     return identity, snapshot_time
@@ -91,8 +89,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 200,
                 {
                     "data": df.to_dict(orient="records"),
-                    "timestamp": snapshot_time.timestamp(),
+                    "timestamp": snapshot_time.replace(tzinfo=timezone.utc).timestamp(),
                     "snapshot_id": snapshot_id,
+                    "snapshot_time": snapshot_time.isoformat(timespec="seconds"),
                     "filename": latest_file.name,
                 },
             )
