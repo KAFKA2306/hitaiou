@@ -38,7 +38,7 @@ class CoreContractTests(unittest.TestCase):
 
             self.assertEqual(selected, newer)
             self.assertEqual(snapshot_id, "20250201_010203")
-            self.assertEqual(snapshot_time.isoformat(), "2025-02-01T01:02:03+00:00")
+            self.assertEqual(snapshot_time.isoformat(), "2025-02-01T01:02:03")
 
             os.utime(older, (500_000_000, 500_000_000))
             os.utime(newer, (2_100_000_000, 2_100_000_000))
@@ -49,6 +49,12 @@ class CoreContractTests(unittest.TestCase):
                 (selected_again, identity_again, time_again),
                 (selected, snapshot_id, snapshot_time),
             )
+
+    def test_tracked_snapshot_name_is_valid(self):
+        snapshot = Path("data/dashboard/demand_metrics_20250125_221837.parquet")
+        identity, snapshot_time = server.parse_snapshot_identity(snapshot)
+        self.assertEqual(identity, "20250125_221837")
+        self.assertEqual(snapshot_time.isoformat(), "2025-01-25T22:18:37")
 
     def test_malformed_snapshot_name_fails_closed(self):
         with TemporaryDirectory() as directory:
