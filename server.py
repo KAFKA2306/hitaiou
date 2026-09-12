@@ -1,11 +1,45 @@
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
 import platform
+import re
 import socket
 import subprocess
 
 import pandas as pd
+
+
+SNAPSHOT_NAME_RE = re.compile(r"^demand_metrics_(\d{8}_\d{6})\.parquet$")
+
+
+def snapshot_identity(path):
+    match = SNAPSHOT_NAME_RE.fullmatch(path.name)
+    if match is None:
+        raise ValueError(f"Invalid demand metrics snapshot name: {path.name}")
+    identity = match.group(1)
+    observed_at = datetime.strptime(identity, "%Y%m%d_%H%M%S").replace(
+        tzinfo=timezone.utc
+    )
+    return identity, observed_at
+
+
+def select_latest_snapshot(dashboard_dir):
+    snapshots = list(Path(dashboard_dir).glob("demand_metrics_*.parquet"))
+    if not snapshots:
+        raise FileNotFoundError("No metrics data found")
+
+    parsed = []
+    identities = set()
+    for path in snapshots:
+        identity, observed_at = snapshot_identity(path)
+        if identity in identities:
+            raise ValueError(f"Ambiguous demand metrics snapshot identity: {identity}")
+        identities.add(identity)
+        parsed.append((observed_at, identity, path))
+
+    observed_at, identity, path = max(parsed, key=lambda item: item[0])
+    return path, identity, observed_at
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -38,13 +72,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def handle_metrics(self):
         try:
-            dashboard_dir = Path("data/dashboard")
-            parquet_files = list(dashboard_dir.glob("demand_metrics_*.parquet"))
-            if not parquet_files:
-                self.handle_not_found("No metrics data found")
-                return
-
-            latest_file = max(parquet_files, key=lambda path: path.stat().st_mtime)
+            latest_file, snapshot_id, observed_at = select_latest_snapshot(
+                Path("data/dashboard")
+            )
             df = pd.read_parquet(latest_file).sort_values(
                 "potential_sales", ascending=False
             )
@@ -52,10 +82,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 200,
                 {
                     "data": df.to_dict(orient="records"),
-                    "timestamp": latest_file.stat().st_mtime,
+                    "timestamp": observed_at.timestamp(),
+                    "snapshot_id": snapshot_id,
                     "filename": latest_file.name,
                 },
             )
+        except FileNotFoundError:
+            self.handle_not_found("No metrics data found")
         except Exception as exc:
             self.handle_server_error(str(exc))
 
