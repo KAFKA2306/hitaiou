@@ -16,7 +16,7 @@ python server.py
 API:
 
 - `GET /` — server statusと利用可能endpoint
-- `GET /api/demand-metrics` — 最新の需要集計を`potential_sales`降順で返す。`snapshot_id`と`timestamp`は選択されたsnapshot filenameから導出されます。
+- `GET /api/demand-metrics` — 最新の需要集計を`potential_sales`降順で返す。`snapshot_id`とtimezoneを付加しない`YYYY-MM-DDTHH:MM:SS`形式の`snapshot_time`は、選択されたsnapshot filenameから直接導出されます。互換用`timestamp`もfilesystem mtimeではなく同じsnapshot identityから導出します。
 
 ## データ取得
 
