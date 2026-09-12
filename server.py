@@ -1,11 +1,48 @@
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
 import platform
+import re
 import socket
 import subprocess
 
 import pandas as pd
+
+
+SNAPSHOT_NAME_RE = re.compile(r"^demand_metrics_(\d{8})_(\d{6})\.parquet$")
+
+
+def parse_snapshot_identity(path):
+    match = SNAPSHOT_NAME_RE.fullmatch(path.name)
+    if not match:
+        raise ValueError(f"Malformed dashboard snapshot name: {path.name}")
+
+    identity = f"{match.group(1)}_{match.group(2)}"
+    try:
+        snapshot_time = datetime.strptime(identity, "%Y%m%d_%H%M%S").replace(
+            tzinfo=timezone.utc
+        )
+    except ValueError as exc:
+        raise ValueError(f"Invalid dashboard snapshot time: {path.name}") from exc
+    return identity, snapshot_time
+
+
+def select_latest_snapshot(paths):
+    parsed = []
+    seen_identities = set()
+    for path in sorted(paths, key=lambda candidate: candidate.name):
+        identity, snapshot_time = parse_snapshot_identity(path)
+        if identity in seen_identities:
+            raise ValueError(f"Ambiguous dashboard snapshot identity: {identity}")
+        seen_identities.add(identity)
+        parsed.append((snapshot_time, identity, path))
+
+    if not parsed:
+        raise FileNotFoundError("No metrics data found")
+
+    snapshot_time, identity, path = max(parsed, key=lambda item: item[0])
+    return path, identity, snapshot_time
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -44,7 +81,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 self.handle_not_found("No metrics data found")
                 return
 
-            latest_file = max(parquet_files, key=lambda path: path.stat().st_mtime)
+            latest_file, snapshot_id, snapshot_time = select_latest_snapshot(
+                parquet_files
+            )
             df = pd.read_parquet(latest_file).sort_values(
                 "potential_sales", ascending=False
             )
@@ -52,7 +91,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 200,
                 {
                     "data": df.to_dict(orient="records"),
-                    "timestamp": latest_file.stat().st_mtime,
+                    "timestamp": snapshot_time.timestamp(),
+                    "snapshot_id": snapshot_id,
                     "filename": latest_file.name,
                 },
             )
