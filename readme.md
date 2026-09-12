@@ -5,7 +5,7 @@ BOOTHのアバター×衣装の需要データを処理し、集計結果をHTTP
 ## 現在の実行経路
 
 1. `process.py` がGoogle Sheets APIから入力を取得し、BOOTH URLを正規化して `data/` 配下へ保存します。
-2. `server.py` が `data/dashboard/demand_metrics_*.parquet` の最新ファイルを読み込みます。
+2. `server.py` が `data/dashboard/demand_metrics_YYYYMMDD_HHMMSS.parquet` の日時をsnapshot identityとして解釈し、意味上もっとも新しいsnapshotを読み込みます。filesystem mtimeは選択や鮮度表示に使いません。
 3. HTTP APIはポート`8001`で起動します。
 
 ```bash
@@ -16,7 +16,7 @@ python server.py
 API:
 
 - `GET /` — server statusと利用可能endpoint
-- `GET /api/demand-metrics` — 最新の需要集計を`potential_sales`降順で返す
+- `GET /api/demand-metrics` — 最新の需要集計を`potential_sales`降順で返す。`snapshot_id`と`timestamp`は選択されたsnapshot filenameから導出されます。
 
 ## データ取得
 
