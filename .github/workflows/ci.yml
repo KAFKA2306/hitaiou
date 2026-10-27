@@ -27,6 +27,8 @@ jobs:
           for _ in {1..20}; do
             if curl --fail --silent http://127.0.0.1:8001/ >/tmp/hitaiou-root.json; then
               python -c "import json; from pathlib import Path; payload=json.loads(Path('/tmp/hitaiou-root.json').read_text()); assert payload['status']=='running'; assert payload['endpoints'][0]['path']=='/api/demand-metrics'"
+              curl --fail --silent http://127.0.0.1:8001/api/demand-metrics >/tmp/hitaiou-metrics.json
+              python -c "import json; from pathlib import Path; payload=json.loads(Path('/tmp/hitaiou-metrics.json').read_text()); assert payload['filename']=='demand_metrics_20250125_221837.parquet'; assert payload['snapshot_id']=='20250125_221837'; assert payload['snapshot_time']=='2025-01-25T22:18:37'; assert payload['data']"
               exit 0
             fi
             sleep 1

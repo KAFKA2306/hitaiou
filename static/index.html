@@ -35,33 +35,27 @@
             
             <div class="mt-4 text-sm text-gray-500">
                 <p>※ 潜在市場規模 = リクエスト数 × 中央値価格</p>
-                <p>※ ランキングは毎日更新されます</p>
+                <p>※ 表示日時は集計snapshotの生成時刻です</p>
             </div>
         </div>
     </div>
 
     <script>
-        // 数値のフォーマット関数
         function formatNumber(num) {
             return new Intl.NumberFormat('ja-JP').format(num);
         }
 
-        // 日時のフォーマット関数
-        function formatDate(timestamp) {
-            const date = new Date(timestamp * 1000);
-            return date.toLocaleString('ja-JP');
+        function formatSnapshotTime(snapshotTime) {
+            return snapshotTime.replace('T', ' ');
         }
 
-        // データを取得して表示する関数
         async function fetchAndDisplayData() {
             try {
                 const response = await fetch('/api/demand-metrics');
                 const result = await response.json();
                 
-                // 最終更新日時を更新
-                document.getElementById('lastUpdate').textContent = `最終更新: ${formatDate(result.timestamp)}`;
+                document.getElementById('lastUpdate').textContent = `最終更新: ${formatSnapshotTime(result.snapshot_time)}`;
                 
-                // テーブルを更新
                 const tableBody = document.getElementById('rankingTable');
                 tableBody.innerHTML = '';
                 
@@ -94,10 +88,7 @@
             }
         }
 
-        // 初期読み込み
         fetchAndDisplayData();
-        
-        // 5分ごとに更新
         setInterval(fetchAndDisplayData, 5 * 60 * 1000);
     </script>
 </body>
